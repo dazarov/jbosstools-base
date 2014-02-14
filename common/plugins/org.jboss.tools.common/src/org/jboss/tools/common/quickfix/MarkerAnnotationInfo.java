@@ -32,12 +32,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.SimpleMarkerAnnotation;
 import org.eclipse.wst.sse.ui.StructuredTextInvocationContext;
+import org.eclipse.wst.sse.ui.internal.correction.CompoundQuickAssistProcessor;
 import org.eclipse.wst.sse.ui.internal.correction.QuickFixRegistry;
 import org.eclipse.wst.sse.ui.internal.reconcile.TemporaryAnnotation;
 
 public class MarkerAnnotationInfo {
 	public final List<AnnotationInfo> infos;
 	public final ISourceViewer viewer;
+	private CompoundQuickAssistProcessor fCompoundQuickAssistProcessor = new CompoundQuickAssistProcessor();
+
 
 	public MarkerAnnotationInfo(List<AnnotationInfo> infos, ISourceViewer textViewer) {
 		this.infos = infos;
@@ -95,6 +98,13 @@ public class MarkerAnnotationInfo {
 			Map attributes = null;
 			attributes = annotation.getAttributes();
 			StructuredTextInvocationContext sseContext = new StructuredTextInvocationContext(viewer, info.position.getOffset(), info.position.getLength(), attributes);
+			
+			ICompletionProposal[] compoundQuickAssistProcessorProposals = fCompoundQuickAssistProcessor.computeQuickAssistProposals(sseContext);
+			if (compoundQuickAssistProcessorProposals != null) {
+				for (ICompletionProposal p : compoundQuickAssistProcessorProposals) {
+					allProposals.add(p);
+				}
+			}
 
 			// call each processor
 			for (int i = 0; i < processors.size(); ++i) {
